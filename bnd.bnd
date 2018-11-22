@@ -1,0 +1,5 @@
+Bundle-Name: tableauview
+Bundle-SymbolicName: ua.com.ncu.tableauview
+Bundle-Version: 2.0.0
+Export-Package: ua.com.ncu.constants
+-metatype: *
