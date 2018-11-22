@@ -49,6 +49,13 @@ function initializeViz<portlet:namespace/>() {
 		var options<portlet:namespace/> = {
 		//width: "100%",
 		//height: "100%",
+<%     
+		Map<String, String> m = (Map<String, String>) request.getAttribute("tableaFilters");
+		for(Map.Entry<String, String> e : m.entrySet()){
+			System.out.println(e.getKey() + " :: " + e.getValue());
+%>
+				"<%= e.getKey()%>" : [<%= e.getValue()%>],
+<% 		} %>		
 		 hideTabs: <%= tableauHideTabs%>,
 		 hideToolbar: <%= tableauHideToolbar%>,
 		 onFirstInteractive: function () {
@@ -67,12 +74,13 @@ function initializeViz<portlet:namespace/>() {
 window.tableau = window.tableau || {};
 
 if (window.tableau._apiLoaded) { 
-	Liferay.on(
-				'allPortletsReady',
-				function() {
+	console.log("Liferay.on :: 1");
+	//Liferay.on(
+	//			'allPortletsReady',
+	//			function() {
 					initializeViz<portlet:namespace/>();
-				}
-		);
+		//		}
+	//	);
 } else {
 	window.tableau._apiLoaded = true;
 	var script = document.createElement("script");  // Creates a new <div> node

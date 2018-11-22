@@ -1,3 +1,4 @@
+<%@page import="java.util.Map"%>
 <%@page import="com.liferay.portal.kernel.log.LogFactoryUtil"%>
 <%@page import="com.liferay.portal.kernel.log.Log"%>
 <%@page import="ua.com.ncu.portlet.TableauViewConfiguration"%>

@@ -6,14 +6,18 @@ import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCPortlet;
+import com.liferay.portal.kernel.util.PortalUtil;
 
 import java.io.IOException;
+import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Map;
 
 import javax.portlet.Portlet;
 import javax.portlet.PortletException;
 import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
+import javax.servlet.http.HttpServletRequest;
 
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
@@ -45,6 +49,22 @@ public class TableauViewPortlet extends MVCPortlet {
 			throws IOException, PortletException {
 		
 		_log.debug("Tableau View Portlet render");
+		
+		HttpServletRequest httpservletrequest = PortalUtil.getHttpServletRequest(renderRequest);
+		
+		Enumeration<String> enumeration = PortalUtil.getOriginalServletRequest(httpservletrequest).getParameterNames();
+		Map<String,String> parameters = new HashMap<>();
+		
+		while(enumeration.hasMoreElements()){
+			 String name = enumeration.nextElement();
+			 parameters.put(name, PortalUtil.getOriginalServletRequest(httpservletrequest).getParameter(name));
+		 }
+		
+//		for(Map.Entry<String, String> e : parameters.entrySet()){
+//			System.out.println(e.getKey() + " : " + e.getValue() );
+//		}
+		
+		renderRequest.setAttribute("tableaFilters", parameters);
 		renderRequest.setAttribute(TableauViewConfiguration.class.getName(), _tableauViewConfiguration);
 		
 		super.doView(renderRequest, renderResponse);
