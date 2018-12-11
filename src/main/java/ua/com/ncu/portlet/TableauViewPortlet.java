@@ -9,9 +9,11 @@ import com.liferay.portal.kernel.portlet.bridges.mvc.MVCPortlet;
 import com.liferay.portal.kernel.util.PortalUtil;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.StringJoiner;
 
 import javax.portlet.Portlet;
 import javax.portlet.PortletException;
@@ -49,22 +51,8 @@ public class TableauViewPortlet extends MVCPortlet {
 			throws IOException, PortletException {
 		
 		_log.debug("Tableau View Portlet render");
-		
-		HttpServletRequest httpservletrequest = PortalUtil.getHttpServletRequest(renderRequest);
-		
-		Enumeration<String> enumeration = PortalUtil.getOriginalServletRequest(httpservletrequest).getParameterNames();
-		Map<String,String> parameters = new HashMap<>();
-		
-		while(enumeration.hasMoreElements()){
-			 String name = enumeration.nextElement();
-			 parameters.put(name, PortalUtil.getOriginalServletRequest(httpservletrequest).getParameter(name));
-		 }
-		
-//		for(Map.Entry<String, String> e : parameters.entrySet()){
-//			System.out.println(e.getKey() + " : " + e.getValue() );
-//		}
-		
-		renderRequest.setAttribute("tableaFilters", parameters);
+				
+		renderRequest.setAttribute("tableaFilters", getFilter(renderRequest));
 		renderRequest.setAttribute(TableauViewConfiguration.class.getName(), _tableauViewConfiguration);
 		
 		super.doView(renderRequest, renderResponse);
@@ -77,6 +65,45 @@ public class TableauViewPortlet extends MVCPortlet {
 		_tableauViewConfiguration = ConfigurableUtil.createConfigurable(
 				TableauViewConfiguration.class, properties);
     }
+	
+	//Create Filter for Tableau.
+	//Exclude parameters that is start with ":" , "p_" , "currentURL" , "portletAjaxable"
+	private String getFilter(RenderRequest renderRequest){
+		_log.debug("inside getFilter ...");
+		StringJoiner tableauFilter = new StringJoiner("," , "{" , "}");
+		HttpServletRequest httpservletrequest = PortalUtil.getHttpServletRequest(renderRequest);
+		
+		Enumeration<String> enumeration = PortalUtil.getOriginalServletRequest(httpservletrequest).getParameterNames();
+		Map<String,String> parameters = new HashMap<>();
+		
+		while(enumeration.hasMoreElements()){
+			 String name = enumeration.nextElement();
+			 parameters.put(name, PortalUtil.getOriginalServletRequest(httpservletrequest).getParameter(name));
+		 }
+		
+		for(Map.Entry<String, String> e : parameters.entrySet()){
+			if(!e.getKey().startsWith(":") && 
+					!e.getKey().startsWith("p_") &&
+					!e.getKey().equals("currentURL") &&
+					!e.getKey().equals("portletAjaxable")){
+			
+				tableauFilter.add(e.getKey() + ":" + splitParametrValue(e.getValue()));
+			}
+		}
+		_log.debug("tableauFilter = " + tableauFilter.toString());
+		return tableauFilter.toString();
+	}
+	
+	//Split parameter value string by "," 
+	private String splitParametrValue(String v){
+		String [] value = v.split(",");
+		
+		for(int i=0; i < value.length; i++){
+			value[i] = "\"" + value[i] + "\""; 
+		}
+		
+		return Arrays.toString(value);
+	}
 	
 	private static Log _log = LogFactoryUtil.getLog("ua.com.ncu.tableau");
 
